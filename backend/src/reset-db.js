@@ -1,0 +1,11 @@
+import fs from "node:fs";
+import Database from "better-sqlite3";
+import { db, dbPath } from "./db.js";
+db.close();
+for (const suffix of ["", "-wal", "-shm"]) fs.rmSync(dbPath + suffix, { force: true });
+const fresh = new Database(dbPath);
+fresh.pragma("foreign_keys = ON");
+const migration = fs.readFileSync(new URL("./reset-schema.sql", import.meta.url), "utf8");
+fresh.exec(migration);
+fresh.close();
+console.log("Database reset with an empty schema.");
